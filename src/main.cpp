@@ -1,26 +1,21 @@
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 byte incomingByte;
 
 void setup() {
     Serial.begin(9600);
-//    while (!Serial) {
-//        ; // wait for serial port to connect. Needed for Native USB only
-//    }
+    pinMode(12, OUTPUT);
 }
 
 void loop() {
-    Serial.write(1);
-    delay(700);
+    while (Serial.available()) {
+        incomingByte = Serial.read();
+        if (incomingByte == 0b00000001){
+            digitalWrite(12, HIGH);
+        }
+        else if (incomingByte == 0b00000010){
+            digitalWrite(12, LOW);
+        }
     }
-//    if (Serial.available() > 0) {
-//        // read the incoming byte:
-//        incomingByte = Serial.read();
-//        Serial.print("I received: ");
-//        Serial.println(incomingByte, BIN);
-//        Serial.print("Or in DEC: ");
-//        Serial.println(incomingByte, DEC);
-//    }
-//    else {
-//        Serial.print("Nista\n");
-//        delay(1000);
-//    }
+    delay(100);
+}
