@@ -11,25 +11,61 @@ using namespace std;
 
 
 class Atmega {
-public:
+private:
     struct Pin {
         int pinNumber;
         unsigned char pinMode;
+        int currentValue;
+        string id;
     };
-
+public:
     vector<Pin> allPins;
-    Pin pinRelay_1{5, OUTPUT};
+    Pin PSWM1   {18, INPUT, 0, "pinSwitchMonitor_1"};
+    Pin PSWM2   {19, INPUT, 0, "pinSwitchMonitor_2"};
+    Pin PA1     {24, INPUT, 0, "pinAmmeter_1"};
+    Pin PA2     {25, INPUT, 0, "pinAmmeter_2"};
+    Pin PR1     {5, OUTPUT, 0, "pinRelay_1"}; // todo: vrati na 14
+    Pin PR2     {13, OUTPUT, 0, "pinRelay_2"};
+    Pin PS      {4, INPUT, 0, "pinSensor"};
+    Pin PPMW1   {15, OUTPUT, 0, "pinPmw_1"};
+    Pin PPMW2   {16, OUTPUT, 0, "pinPmw_2"};
+    Pin PP1     {27, INPUT, 0, "pinPot_1"};
+    Pin PP2     {28, INPUT, 0, "pinPot_2"};
 
     Atmega() {
-        allPins.push_back(pinRelay_1);
+        allPins.push_back(PSWM1);
+        allPins.push_back(PSWM2);
+        allPins.push_back(PA1);
+        allPins.push_back(PA2);
+        allPins.push_back(PR1);
+        allPins.push_back(PR2);
+        allPins.push_back(PS);
+        allPins.push_back(PPMW1);
+        allPins.push_back(PPMW2);
+        allPins.push_back(PP1);
+        allPins.push_back(PP2);
+
     }
 
-
     void handleCommandRequest(const JsonObject obj) {
-        if (obj["pinRelay_1"] == 1) {
-            digitalWrite(pinRelay_1.pinNumber, HIGH);
-        } else if (obj["pinRelay_1"] == 0) {
-            digitalWrite(pinRelay_1.pinNumber, LOW);
+        for (JsonPair keyValue : obj) {
+            for(Pin &pin: *&allPins) {
+                if (pin.id == keyValue.key().c_str()){
+                    pin.currentValue = keyValue.value().as<int>();
+                    break;
+                }
+            }
+        }
+    }
+
+    void updateOutputPins(){
+        for(const Pin& pin: allPins) {
+            if (pin.currentValue == 1){
+                digitalWrite(pin.pinNumber, HIGH);
+            }
+            else if (pin.currentValue == 0){
+                digitalWrite(pin.pinNumber, LOW);
+            }
         }
     }
 

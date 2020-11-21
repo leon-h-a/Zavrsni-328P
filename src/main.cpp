@@ -33,6 +33,7 @@ void loop() {
         Serial.println("Got something");
         msg = Serial.readString();
         uC.handleRequest(msg);
+        uC.updateOutputPins();
 
 
 
