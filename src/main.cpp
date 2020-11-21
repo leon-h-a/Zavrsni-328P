@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <string>
-#include <map>
+//#include <string>
+//#include <map>
 #include <Atmega.h>
 
 using namespace std;
@@ -24,22 +24,28 @@ String msg;
 
 void setup() {
     Serial.begin(9600);
+    Serial.setTimeout(100);
     uC.setPinModes();
 }
 
 void loop() {
-    if(Serial.available()){
-        Serial.write("smth");
+    if (Serial.available()){
+        Serial.println("Got something");
         msg = Serial.readString();
-        if (uC.getRequestType(msg) == "requestCommand"){
-            uC.handleCommandRequest(msg);
-            uC.writeNewValues();
-        }
-        else if (uC.getRequestType(msg) == "dataRequest"){
-//            uC.handleDataRequest(msg);
+        uC.handleRequest(msg);
+
+
+
+
+//        if (uC.getRequestType(msg) == "requestCommand"){
+//            uC.handleCommandRequest(msg);
+//            uC.writeNewValues();
+//        }
+//        else if (uC.getRequestType(msg) == "dataRequest"){
+////            uC.handleDataRequest(msg);
         }
     }
-}
+//}
 
 
 
