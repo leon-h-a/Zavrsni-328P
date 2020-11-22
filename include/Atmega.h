@@ -21,17 +21,17 @@ private:
     };
 public:
     vector<Pin> allPins;
-    Pin PSWM1   {18, INPUT, 0, "pinSwitchMonitor_1", "ANALOG"};
-    Pin PSWM2   {19, INPUT, 0, "pinSwitchMonitor_2", "ANALOG"};
-    Pin PA1     {24, INPUT, 0, "pinAmmeter_1", "ANALOG"};
-    Pin PA2     {25, INPUT, 0, "pinAmmeter_2", "ANALOG"};
-    Pin PR1     {5, OUTPUT, 0, "pinRelay_1", "DIGITAL"}; // todo: vrati na 14
-    Pin PR2     {13, OUTPUT, 0, "pinRelay_2", "DIGITAL"};
-    Pin PS      {4, INPUT, 0, "pinSensor", "ANALOG"};
-    Pin PPMW1   {15, OUTPUT, 0, "pinPmw_1", "ANALOG"};
-    Pin PPMW2   {16, OUTPUT, 0, "pinPmw_2", "ANALOG"};
-    Pin PP1     {27, INPUT, 0, "pinPot_1", "ANALOG"};
-    Pin PP2     {28, INPUT, 0, "pinPot_2", "ANALOG"};
+    Pin PSWM1   {18, INPUT, 0, "PSWM1", "A"};
+    Pin PSWM2   {19, INPUT, 0, "PSWM2", "A"};
+    Pin PA1     {24, INPUT, 0, "PA1", "A"};
+    Pin PA2     {25, INPUT, 0, "PA2", "A"};
+    Pin PR1     {5, OUTPUT, 0, "PR1", "D"};
+    Pin PR2     {13, OUTPUT, 0, "PR2", "D"};
+    Pin PS      {4, INPUT, 0, "PS", "A"};
+    Pin PPMW1   {15, OUTPUT, 0, "PPMW1", "A"};
+    Pin PPMW2   {16, OUTPUT, 0, "PPMW2", "A"};
+    Pin PP1     {27, INPUT, 0, "PP1", "A"};
+    Pin PP2     {28, INPUT, 0, "PP2", "A"};
 
     Atmega() {
         allPins.push_back(PSWM1);
@@ -50,25 +50,24 @@ public:
 
     void handleCommandRequest(const JsonObject obj) {
         for (JsonPair keyValue : obj) {
-            for(Pin& pin: *&allPins) { // todo mozda maknut &* svugdje
+            for(Pin& pin: allPins) {
                 if (pin.id == keyValue.key().c_str()){
                     pin.currentValue = keyValue.value().as<int>();
-                    break; // todo: ovo ce mozda trebati maknuti
+                    break;
                 }
             }
         }
-//        updateOutputPins();
     }
 
     void updateOutputPins(){
-        for(const Pin& pin: *&allPins) {
-            if (pin.currentValue == 1 && pin.pinSignal == "DIGITAL"){
+        for(const Pin& pin: allPins) {
+            if (pin.currentValue == 1 && pin.pinSignal == "D"){
                 digitalWrite(pin.pinNumber, HIGH);
             }
-            else if (pin.currentValue == 0 && pin.pinSignal == "DIGITAL"){
+            else if (pin.currentValue == 0 && pin.pinSignal == "D"){
                 digitalWrite(pin.pinNumber, LOW);
             }
-            else if (pin.pinMode == OUTPUT && pin.pinSignal == "ANALOG"){
+            else if (pin.pinMode == OUTPUT && pin.pinSignal == "A"){
                 analogWrite(pin.pinNumber, pin.currentValue); // Analog write [OFF-ON] = 0-255
             }
             else{
@@ -78,11 +77,11 @@ public:
     }
 
     void updateInputPins(){
-        for(Pin& pin: *&allPins) {
-            if (pin.pinSignal == "DIGITAL" && pin.pinMode == INPUT){
+        for(Pin& pin: allPins) {
+            if (pin.pinSignal == "D" && pin.pinMode == INPUT){
                 pin.currentValue = (int) digitalRead(pin.pinNumber);
             }
-            else if (pin.pinSignal == "ANALOG" && pin.pinMode == INPUT){
+            else if (pin.pinSignal == "A" && pin.pinMode == INPUT){
                 pin.currentValue = (int) analogRead(pin.pinNumber);
             }
         }
@@ -95,9 +94,9 @@ public:
     }
 
     void handleRequest(String message) {
-        StaticJsonDocument<60> doc; // todo: ovo treba izracunati kako spada
+        StaticJsonDocument<60> doc;
         if (DeserializationError err = deserializeJson(doc, message)) {
-            Serial.print("deserializeJson() failed with code: ");
+            Serial.print("deserializeJson() failed: ");
             Serial.println(err.c_str());
         }
         if (doc["type"] == "requestCommand") {
@@ -107,14 +106,13 @@ public:
             handleDataRequest();
         }
         else {
-            Serial.println("Wrong request type");
+            Serial.println("Wrong req type");
         }
     }
 
     void handleDataRequest() {
         updateInputPins();
-        StaticJsonDocument<60> doc; // todo: ovo treba izracunati kako spada
-        Serial.print("sim");
+        StaticJsonDocument<60> doc;
         for(Pin& pin: allPins) {
             doc[pin.id.c_str()] = pin.currentValue;
         }

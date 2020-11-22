@@ -29,11 +29,9 @@ void setup() {
 }
 
 void loop() {
-    if (Serial.available()){
-        Serial.println("Got something");
+    if(Serial.available()){
         msg = Serial.readString();
         uC.handleRequest(msg);
         uC.updateOutputPins();
     }
-    delay(10);
 }
